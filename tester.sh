@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z $1 -o -z $2 ]; then
+if [ -z "$1" ]; then
   echo "usage: $0 program [testfile|testdir]"
   exit 1
 fi
@@ -44,10 +44,11 @@ fi
 echo ".. Compile"
 make "CPPFLAGS=-O2 -static -lm" $program
 
-echo ".. Run"
 if [ -z $testfile ]; then
+  echo ".. Run (interactive)"
   ./$program
 else
+  echo ".. Run"
   if [ $with_timeout = "1" ]; then
     echo ".. Time limit = $time_limit"
   fi

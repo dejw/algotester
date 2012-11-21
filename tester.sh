@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# config
+
+with_timeout=1
+time_limit="1s"   # (float)
+memory_limit=32   # (int) megs
+
+
 if [ -z "$1" ]; then
   echo "usage: $0 program [testfile|testdir]"
   exit 1
@@ -10,25 +17,35 @@ testfile=$2
 count=0
 wrong_answer=0
 time_limit_exceeded=0
-with_timeout=1
-time_limit="1s"
+memory_limit_exceeded=0
 
 function run() {
+  # prepare script
+  echo "ulimit -v ${memory_limit}000; ./$program < '${1}.in' > /tmp/$program.out" > /tmp/run_$program.sh
+  chmod +x /tmp/run_$program.sh
+
   if [ $with_timeout = "1" ]; then
-    echo "./$program < '${1}.in' | cmp - '${1}.out' --silent" > /tmp/_test.sh
-    chmod +x /tmp/_test.sh
-    timeout $time_limit /tmp/_test.sh
+    timeout $time_limit /tmp/run_$program.sh 2> /dev/null
   else
-    ./$program < "${1}.in" | cmp - "${1}.out"
+    /tmp/run_$program.sh 2> /dev/null
   fi
 
-  status=$?
-  if [ $status = "124" ]; then
+  prog_status=$?
+
+  if [ $prog_status = "124" ]; then
     echo "   [TLE] $1"
     ((time_limit_exceeded++))
-  elif [ ! $status = "0" ]; then
-    echo "   [WA] $1"
-    ((wrong_answer++))
+  elif [ $prog_status = "2" -o $prog_status = "137" ]; then
+    echo "   [ME] $1"
+    ((memory_limit_exceeded++))
+  else
+    cmp /tmp/$program.out "${1}.out" --silent
+    cmp_status=$?
+
+    if [ ! $cmp_status = "0" ]; then
+      echo "   [WA] $1"
+      ((wrong_answer++))
+    fi
   fi
   ((count++))
 }
@@ -49,6 +66,7 @@ if [ -z $testfile ]; then
   ./$program
 else
   echo ".. Run"
+  echo ".. Memory limit = ${memory_limit} megs"
   if [ $with_timeout = "1" ]; then
     echo ".. Time limit = $time_limit"
   fi
@@ -61,5 +79,5 @@ else
   else
     run $testfile
   fi
-  echo ".. $count tests run, $wrong_answer WA, $time_limit_exceeded TLE"
+  echo ".. $count tests run, $wrong_answer WA, $time_limit_exceeded TLE, $memory_limit_exceeded ME"
 fi

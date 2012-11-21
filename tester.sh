@@ -3,8 +3,8 @@
 # config
 
 with_timeout=1
-time_limit="1s"   # (float)
-memory_limit=32   # (int) megs
+time_limit="2s"   # (float)
+memory_limit=128   # (int) megs
 
 
 if [ -z "$1" ]; then
@@ -15,6 +15,7 @@ fi
 program=$1
 testfile=$2
 count=0
+accepted=0
 wrong_answer=0
 time_limit_exceeded=0
 memory_limit_exceeded=0
@@ -45,6 +46,8 @@ function run() {
     if [ ! $cmp_status = "0" ]; then
       echo "   [WA] $1"
       ((wrong_answer++))
+    else
+      ((accepted++))
     fi
   fi
   ((count++))
@@ -59,7 +62,7 @@ if [ ! $? = "0" ]; then
 fi
 
 echo ".. Compile"
-make "CPPFLAGS=-O2 -static -lm" $program
+make "CPPFLAGS=-O2 -static -lm -DDEBUG" $program || exit 1
 
 if [ -z $testfile ]; then
   echo ".. Run (interactive)"
@@ -79,5 +82,5 @@ else
   else
     run $testfile
   fi
-  echo ".. $count tests run, $wrong_answer WA, $time_limit_exceeded TLE, $memory_limit_exceeded ME"
+  echo ".. $count tests run, $accepted ACC, $wrong_answer WA, $time_limit_exceeded TLE, $memory_limit_exceeded ME"
 fi

@@ -65,7 +65,7 @@ if [ ! $? = "0" ]; then
 fi
 
 echo ".. Compile"
-make "CPPFLAGS=-O2 -Wno-deprecated -static -lm -DAADEBUG" $program || exit 1
+make "CPPFLAGS=-O2 -static -lm" $program || exit 1
 
 if [ $# -eq 0 ]; then
   echo ".. Run (interactive)"

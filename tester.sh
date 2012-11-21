@@ -8,23 +8,26 @@ memory_limit=128   # (int) megs
 
 
 if [ -z "$1" ]; then
-  echo "usage: $0 program [testfile|testdir]"
+  echo "usage: $0 program [testfile|testdir, ...]"
   exit 1
 fi
 
 program=$1
-testfile=$2
 count=0
 accepted=0
 wrong_answer=0
 time_limit_exceeded=0
 memory_limit_exceeded=0
 
+# drop program name
+shift
+
 function run() {
   # prepare script
-  echo "ulimit -v ${memory_limit}000; ./$program < '${1}.in' > /tmp/$program.out" > /tmp/run_$program.sh
+  echo "ulimit -v ${memory_limit}000; (time -f '  %es' ./$program < '${1}.in' > /tmp/$program.out) 2>&1" > /tmp/run_$program.sh
   chmod +x /tmp/run_$program.sh
 
+  echo -n "   ."
   if [ $with_timeout = "1" ]; then
     timeout $time_limit /tmp/run_$program.sh 2> /dev/null
   else
@@ -57,14 +60,14 @@ function run() {
 timeout --help > /dev/null
 
 if [ ! $? = "0" ]; then
-  echo ".. timeout command not found, install using: sudo apt-get install coreutils"
+  echo "!! timeout command not found, install using: sudo apt-get install coreutils"
   with_timeout=0
 fi
 
 echo ".. Compile"
-make "CPPFLAGS=-O2 -static -lm -DDEBUG" $program || exit 1
+make "CPPFLAGS=-O2 -Wno-deprecated -static -lm -DAADEBUG" $program || exit 1
 
-if [ -z $testfile ]; then
+if [ $# -eq 0 ]; then
   echo ".. Run (interactive)"
   ./$program
 else
@@ -74,13 +77,20 @@ else
     echo ".. Time limit = $time_limit"
   fi
 
-  if [ -d $testfile ]; then
-    for filename in $testfile/*.in; do
-      testfile2=`basename $filename .in`
-      run "$testfile/$testfile2"
-    done
-  else
-    run $testfile
-  fi
-  echo ".. $count tests run, $accepted ACC, $wrong_answer WA, $time_limit_exceeded TLE, $memory_limit_exceeded ME"
+  for testfile in $@; do
+    echo ".. Testing: $testfile"
+
+    if [ -d $testfile ]; then
+      for filename in $testfile/*.in; do
+        testfile2=`basename $filename .in`
+        run "$testfile/$testfile2"
+      done
+    elif [ -f $testfile ]; then
+      run $testfile
+    else
+      echo "!! not found, skipping"
+    fi
+  done
+
+  echo -e "\n.. $count tests run, $accepted ACC, $wrong_answer WA, $time_limit_exceeded TLE, $memory_limit_exceeded ME"
 fi

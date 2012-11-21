@@ -24,10 +24,10 @@ shift
 
 function run() {
   # prepare script
-  echo "ulimit -v ${memory_limit}000; (time -f '  %es' ./$program < '${1}.in' > /tmp/$program.out) 2>&1" > /tmp/run_$program.sh
+  echo "ulimit -v ${memory_limit}000; (time -f '%es' ./$program < '${1}.in' > /tmp/$program.out) 2>&1" > /tmp/run_$program.sh
   chmod +x /tmp/run_$program.sh
 
-  echo -n "   ."
+  echo -n "   . "
   if [ $with_timeout = "1" ]; then
     timeout $time_limit /tmp/run_$program.sh 2> /dev/null
   else

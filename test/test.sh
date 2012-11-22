@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function runTester() {
-  ../algotester.sh $1 testdir | tail -n1
+  ../algotester.sh $1 testdir 2>&1 | tail -n1
 }
 
 function assertIn() {
@@ -11,6 +11,7 @@ function assertIn() {
   fi
 }
 
+assertIn "Error 1" "`runTester compile_error`" "Compile error"
 assertIn "1 ACC" "`runTester ok`" "ACC"
 assertIn "1 WA" "`runTester wa`" "WA"
 assertIn "1 TLE" "`runTester sleep2`" "TLE"

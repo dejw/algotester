@@ -3,8 +3,8 @@
 # config
 
 with_timeout=1
-time_limit="2s"   # (float)
-memory_limit=128   # (int) megs
+time_limit="1s"   # (float)
+memory_limit=32   # (int) megs
 
 
 if [ -z "$1" ]; then

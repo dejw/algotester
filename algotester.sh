@@ -43,7 +43,7 @@ function run() {
     echo "   [ME] $1"
     ((memory_limit_exceeded++))
   else
-    cmp /tmp/$program.out "${1}.out" --silent
+    diff /tmp/$program.out "${1}.out" -Z > /dev/null
     cmp_status=$?
 
     if [ ! $cmp_status = "0" ]; then

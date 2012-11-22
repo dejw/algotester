@@ -39,7 +39,7 @@ function run() {
   if [ $prog_status = "124" ]; then
     echo "   [TLE] $1"
     ((time_limit_exceeded++))
-  elif [ $prog_status = "2" -o $prog_status = "137" ]; then
+  elif [ $prog_status = "2" -o $prog_status = "137" -o $prog_status = "134" ]; then
     echo "   [ME] $1"
     ((memory_limit_exceeded++))
   else
